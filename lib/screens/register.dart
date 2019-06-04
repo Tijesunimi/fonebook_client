@@ -4,6 +4,9 @@ import 'package:fonebook_client/ui_elements/forms/round_icon_textbox.dart';
 import 'package:fonebook_client/ui_elements/forms/round_icon_dropdown.dart';
 
 class RegisterPage extends StatelessWidget {
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
@@ -36,7 +39,7 @@ class RegisterPage extends StatelessWidget {
               RoundIconTextBox(
                 icon: Icons.person_outline,
                 hintText: 'Enter your first name',
-                controller: emailController,
+                controller: firstNameController,
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 40.0, top: 10.0),
@@ -48,7 +51,7 @@ class RegisterPage extends StatelessWidget {
               RoundIconTextBox(
                 icon: Icons.person_outline,
                 hintText: 'Enter your last name',
-                controller: emailController,
+                controller: lastNameController,
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 40.0, top: 10.0),
@@ -60,7 +63,7 @@ class RegisterPage extends StatelessWidget {
               RoundIconTextBox(
                 icon: Icons.phone,
                 hintText: 'Enter your phone number',
-                controller: emailController,
+                controller: phoneController,
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 40.0, top: 10.0),

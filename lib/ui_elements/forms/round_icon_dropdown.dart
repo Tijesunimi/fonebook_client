@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 
-class RoundIconDropDown extends StatelessWidget {
+class RoundIconDropDown extends StatefulWidget {
   final IconData icon;
   final String hintText;
   final Map<String, String> items;
   final Function onChanged;
 
   RoundIconDropDown({this.icon, this.hintText, this.items, this.onChanged});
+
+  @override
+  State<StatefulWidget> createState() => RoundIconDropDownState(this.icon, this.hintText, this.items, this.onChanged);
+}
+
+class RoundIconDropDownState extends State<RoundIconDropDown> {
+  final IconData icon;
+  final String hintText;
+  final Map<String, String> items;
+  final Function onChanged;
+
+  String selectedItem;
+
+  RoundIconDropDownState(this.icon, this.hintText, this.items, this.onChanged);
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +62,13 @@ class RoundIconDropDown extends StatelessWidget {
                     child: new Text(items[key]),
                   );
                 }).toList(),
-                onChanged: this.onChanged,
+                value: selectedItem,
+                onChanged: (value) {
+                  setState(() {
+                    selectedItem = value;
+                  });
+                  this.onChanged(value);
+                },
               ),
             ),
           )
