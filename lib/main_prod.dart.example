@@ -1,0 +1,15 @@
+import 'config.dart';
+import 'main.dart';
+import 'package:flutter/material.dart';
+
+void main() {
+  var app = new Config(
+    env: 'Production',
+    appName: 'Fonebook',
+    appTagLine: 'Manage your contacts in style',
+    apiBaseUrl: 'http://fonebook.com/api',
+    child: Fonebook(),
+  );
+
+  runApp(app);
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fonebook_client/ui_elements/buttons/social_button.dart';
+import 'package:fonebook_client/config.dart';
 
 class IntroPage extends StatelessWidget {
   @override
@@ -29,14 +30,14 @@ class IntroPage extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Text(
-                      "FoneBook",
+                      Config.of(context).appName,
                       style: TextStyle(
                           fontSize: 50.0,
                           fontWeight: FontWeight.bold,
                           color: Colors.white),
                     ),
                     Text(
-                      "Manage your contacts in style",
+                      Config.of(context).appTagLine,
                       style: TextStyle(
                           fontSize: 20.0,
                           fontWeight: FontWeight.bold,

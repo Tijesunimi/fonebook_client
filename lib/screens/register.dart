@@ -5,6 +5,7 @@ import 'package:fonebook_client/ui_elements/forms/round_icon_dropdown.dart';
 
 import 'package:fonebook_client/api/country.dart';
 import 'package:fonebook_client/models/country.dart';
+import 'package:fonebook_client/config.dart';
 
 class RegisterPage extends StatelessWidget {
   TextEditingController firstNameController = TextEditingController();
@@ -17,6 +18,8 @@ class RegisterPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color primaryColor = Theme.of(context).primaryColor;
     final Color backgroundColor = Colors.white12;
+
+    final CountryApi countryApi = CountryApi(Config.of(context).apiBaseUrl);
 
     return Scaffold(
       appBar: AppBar(
@@ -76,7 +79,7 @@ class RegisterPage extends StatelessWidget {
                 ),
               ),
               FutureBuilder<List<Country>>(
-                future: fetchCountries(),
+                future: countryApi.fetchCountries(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return RoundIconDropDown(

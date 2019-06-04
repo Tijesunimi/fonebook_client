@@ -10,3 +10,9 @@ UI Elements from: https://github.com/samarthagarwal/FlutterScreens
 
 Technologies
   - Flutter
+
+To run the app, you need to specify the environment using
+ - flutter run -t lib/main_prod.dart for Production environment
+ - flutter run -t lib/main_dev.dart for Development environment
+
+You can also edit android studio configurations. https://iirokrankka.com/2018/03/02/separating-build-environments/
