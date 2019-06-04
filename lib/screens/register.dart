@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:fonebook_client/ui_elements/buttons/simple_round_icon_button.dart';
-import 'package:fonebook_client/ui_elements/forms/round_icon_textbox.dart';
-import 'package:fonebook_client/ui_elements/forms/round_icon_dropdown.dart';
+import 'package:fonebook/ui_elements/buttons/simple_round_icon_button.dart';
+import 'package:fonebook/ui_elements/forms/round_icon_textbox.dart';
+import 'package:fonebook/ui_elements/forms/round_icon_dropdown.dart';
 
-import 'package:fonebook_client/api/country.dart';
-import 'package:fonebook_client/models/country.dart';
-import 'package:fonebook_client/config.dart';
+import 'package:fonebook/api/country.dart';
+import 'package:fonebook/models/country.dart';
+import 'package:fonebook/config.dart';
 
 class RegisterPage extends StatelessWidget {
   TextEditingController firstNameController = TextEditingController();

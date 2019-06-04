@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fonebook_client/ui_elements/buttons/social_button.dart';
-import 'package:fonebook_client/config.dart';
+import 'package:fonebook/ui_elements/buttons/social_button.dart';
+import 'package:fonebook/config.dart';
 
 class IntroPage extends StatelessWidget {
   @override

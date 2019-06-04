@@ -1,4 +1,4 @@
-package dev.tijesunimi.fonebook_client;
+package dev.tijesunimi.fonebook;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

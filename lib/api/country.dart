@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:fonebook_client/models/country.dart';
+import 'package:fonebook/models/country.dart';
 import 'package:http/http.dart' as http;
 
 class CountryApi {
