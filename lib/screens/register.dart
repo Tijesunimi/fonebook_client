@@ -3,6 +3,9 @@ import 'package:fonebook_client/ui_elements/buttons/simple_round_icon_button.dar
 import 'package:fonebook_client/ui_elements/forms/round_icon_textbox.dart';
 import 'package:fonebook_client/ui_elements/forms/round_icon_dropdown.dart';
 
+import 'package:fonebook_client/api/country.dart';
+import 'package:fonebook_client/models/country.dart';
+
 class RegisterPage extends StatelessWidget {
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
@@ -72,16 +75,27 @@ class RegisterPage extends StatelessWidget {
                   style: TextStyle(color: Colors.grey, fontSize: 16.0),
                 ),
               ),
-              RoundIconDropDown(
-                icon: Icons.location_city,
-                items: {
-                  '1': 'Nigeria',
-                  '2': 'Ghana',
-                  '3': 'Australia'
-                },
-                hintText: "Select your country",
-                onChanged: (String value) {
-                  debugPrint(value);
+              FutureBuilder<List<Country>>(
+                future: fetchCountries(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return RoundIconDropDown(
+                      icon: Icons.location_city,
+                      items: Map.fromIterable(snapshot.data, key: (v) => v.id.toString(), value: (v) => v.name),
+                      hintText: "Select your country",
+                      onChanged: (String value) {
+                        debugPrint(value);
+                      },
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text("${snapshot.error}");
+                  }
+
+                  // By default, show a loading spinner
+                  return Padding(
+                    padding: EdgeInsets.only(left: 40.0),
+                    child: CircularProgressIndicator()
+                  );
                 },
               ),
               Padding(
