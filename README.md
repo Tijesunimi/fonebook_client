@@ -6,5 +6,7 @@ This repository contains the mobile application project.
 
 Server project: https://github.com/Tijesunimi/fonebook_server
 
+UI Elements from: https://github.com/samarthagarwal/FlutterScreens
+
 Technologies
   - Flutter

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'screens/login.dart';
+import 'screens/register.dart';
+import 'screens/intro.dart';
 
 void main() => runApp(Fonebook());
 
@@ -9,15 +12,14 @@ class Fonebook extends StatelessWidget {
       title: 'Fonebook',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        primaryColor: Color(0xFF4aa0d5)
       ),
-      home: Scaffold(
-          appBar: AppBar(
-              title: Text("Fonebook"),
-          ),
-          body: Center(
-              child: Text("Fonebook application"),
-          ),
-      ),
+      routes: {
+        'intro': (context) => IntroPage(),
+        'login': (context) => LoginPage(),
+        'register': (context) => RegisterPage()
+      },
+      initialRoute: 'intro',
     );
   }
 }
