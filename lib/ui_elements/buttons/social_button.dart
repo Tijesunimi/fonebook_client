@@ -27,7 +27,7 @@ class SocialButton extends StatelessWidget {
           children: <Widget>[
             new Expanded(
               child: new FlatButton(
-                onPressed: () => {},
+                onPressed: this.onPressed,
                 padding: EdgeInsets.only(
                   top: 20.0,
                   bottom: 20.0,

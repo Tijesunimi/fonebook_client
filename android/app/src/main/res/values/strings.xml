@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Fone App</string>
+
+    <string name="facebook_app_id">414131932767668</string>
+
+    <string name="fb_login_protocol_scheme">fb414131932767668</string>
+</resources>
