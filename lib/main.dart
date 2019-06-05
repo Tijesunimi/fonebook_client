@@ -34,17 +34,8 @@ class Fonebook extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return Homepage();
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
             }
-
-            return Material(
-              child: Center(
-                child: Container(
-                  height: 10.0,
-                  child: CircularProgressIndicator()),
-              ),
-            );
+            return IntroPage();
           }),
     );
   }

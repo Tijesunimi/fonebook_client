@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,25 @@ class AuthApi {
   final String apiUrl;
 
   AuthApi(this.apiUrl);
+
+  Future<Map<Object, dynamic>> doGoogleAuth() async {
+    GoogleSignIn googleSignIn = GoogleSignIn(scopes: [
+      'email',
+      'https://www.googleapis.com/auth/userinfo.profile'
+    ]);
+    try {
+      var result = await googleSignIn.signIn();
+      return {
+        'id': result.id,
+        'first_name': result.displayName.split(' ')[0],
+        'last_name': result.displayName.split(' ')[1],
+        'email': result.email
+      };
+    } catch (error) {
+      debugPrint(error.toString());
+    }
+    return null;
+  }
 
   Future<Map<Object, dynamic>> doFacebookAuth() async {
     var facebookLogin = FacebookLogin();

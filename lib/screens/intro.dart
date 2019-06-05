@@ -66,7 +66,7 @@ class IntroPage extends StatelessWidget {
                       child: SocialButton(
                         socialMedia: SocialMedia.Google,
                         buttonText: "Continue with Google",
-                        onPressed: () {},
+                        onPressed: () => doSocialLogin(context, authApi, 'google'),
                       ),
                     ),
                     Padding(
@@ -74,7 +74,7 @@ class IntroPage extends StatelessWidget {
                       child: SocialButton(
                         socialMedia: SocialMedia.Facebook,
                         buttonText: "Continue with Facebook",
-                        onPressed: () => doFacebookLogin(context, authApi),
+                        onPressed: () => doSocialLogin(context, authApi, 'facebook'),
                       ),
                     ),
                     Container(
@@ -269,12 +269,12 @@ class IntroPage extends StatelessWidget {
     );
   }
 
-  void doFacebookLogin(BuildContext context, AuthApi authApi) async {
-    final facebookProfile = await authApi.doFacebookAuth();
-    if (facebookProfile != null) {
+  void doSocialLogin(BuildContext context, AuthApi authApi, String media) async {
+    final profile = media == 'facebook' ? await authApi.doFacebookAuth() : await authApi.doGoogleAuth();
+    if (profile != null) {
       final existingUser = await authApi.loginSocial({
-        'email': facebookProfile['email'],
-        'password': "facebook-${facebookProfile['id']}"
+        'email': profile['email'],
+        'password': "$media-${profile['id']}"
       });
 
       if (existingUser != null) {
@@ -286,29 +286,29 @@ class IntroPage extends StatelessWidget {
         );
 
         if (_isAlertSubmitted) {
-          var profile = await authApi.registerUser(User(
-              facebookProfile['first_name'],
-              facebookProfile['last_name'],
-              facebookProfile['email'],
-              _alertCountry,
-              _alertPhoneNumber,
-              "facebook-${facebookProfile['id']}",
-              true));
+          var userProfile = await authApi.registerUser(User(
+            profile['first_name'],
+            profile['last_name'],
+            profile['email'],
+            _alertCountry,
+            _alertPhoneNumber,
+            "$media-${profile['id']}",
+            true));
 
-          if (profile != null) {
-            doLogin(context, profile.token);
+          if (userProfile != null) {
+            doLogin(context, userProfile.token);
           } else {
             Scaffold.of(context).showSnackBar(
-                SnackBar(content: Text('An error occurred. Please try again')));
+              SnackBar(content: Text('An error occurred. Please try again')));
           }
         } else {
           Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('Registration cancelled. Please try again')));
+            content: Text('Registration cancelled. Please try again')));
         }
       }
     } else {
       Scaffold.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred. Please try again')));
+        SnackBar(content: Text('An error occurred. Please try again')));
     }
   }
 }
