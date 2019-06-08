@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:fonebook/config.dart';
 
@@ -14,6 +13,9 @@ import 'package:fonebook/ui_elements/forms/round_icon_dropdown.dart';
 import 'package:fonebook/ui_elements/forms/round_icon_textbox.dart';
 
 class IntroPage extends StatelessWidget {
+  static final TextEditingController countryController = TextEditingController();
+  static final TextEditingController phoneController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = Theme.of(context).primaryColor;
@@ -160,24 +162,12 @@ class IntroPage extends StatelessWidget {
     );
   }
 
-  void doLogin(BuildContext context, String token) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', token);
-    Navigator.popAndPushNamed(context, 'home');
-  }
-
-  String _alertCountry;
-  String _alertPhoneNumber;
-  bool _isAlertSubmitted;
-
   static final _formKey = GlobalKey<FormState>();
 
   Widget _buildCountryDialog(BuildContext context) {
     final CountryApi countryApi = CountryApi(Config.of(context).apiBaseUrl);
-    final TextEditingController phoneController = TextEditingController();
-    _isAlertSubmitted = false;
-    _alertCountry = "";
-    _alertPhoneNumber = "";
+    countryController.text = "";
+    phoneController.text = "";
 
     return AlertDialog(
       title: Text('Complete Registration'),
@@ -207,7 +197,7 @@ class IntroPage extends StatelessWidget {
                         margin: EdgeInsets.only(top: 10.0),
                         onChanged: (String value) {},
                         onSaved: (String value) {
-                          _alertCountry = value;
+                          countryController.text = value;
                         },
                         validator: (value) {
                           if (value == null) return 'Country is required';
@@ -232,14 +222,13 @@ class IntroPage extends StatelessWidget {
               RoundIconTextBox(
                 icon: Icons.phone,
                 hintText: 'Enter your phone number',
-                controller: phoneController,
                 margin: EdgeInsets.only(top: 10.0),
                 inputType: TextInputType.number,
                 validator: (value) {
                   if (value.trim().isEmpty) return 'Phone number is required';
                 },
                 onSaved: (value) {
-                  _alertPhoneNumber = value;
+                  phoneController.text = value;
                 },
               ),
             ],
@@ -251,7 +240,6 @@ class IntroPage extends StatelessWidget {
           onPressed: () {
             if (_formKey.currentState.validate()) {
               _formKey.currentState.save();
-              _isAlertSubmitted = true;
               Navigator.of(context).pop();
             }
           },
@@ -278,25 +266,27 @@ class IntroPage extends StatelessWidget {
       });
 
       if (existingUser != null) {
-        doLogin(context, existingUser.token);
+        await authApi.saveToken(existingUser.token);
+        Navigator.popAndPushNamed(context, 'home');
       } else {
         await showDialog(
           context: context,
           builder: (BuildContext context) => _buildCountryDialog(context),
         );
 
-        if (_isAlertSubmitted) {
+        if (phoneController.text.trim() != "" && countryController.text != "") {
           var userProfile = await authApi.registerUser(User(
             profile['first_name'],
             profile['last_name'],
             profile['email'],
-            _alertCountry,
-            _alertPhoneNumber,
+            countryController.text,
+            phoneController.text,
             "$media-${profile['id']}",
             true));
 
           if (userProfile != null) {
-            doLogin(context, userProfile.token);
+            await authApi.saveToken(userProfile.token);
+            Navigator.popAndPushNamed(context, 'home');
           } else {
             Scaffold.of(context).showSnackBar(
               SnackBar(content: Text('An error occurred. Please try again')));

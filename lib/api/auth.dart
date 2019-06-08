@@ -69,6 +69,19 @@ class AuthApi {
     return null;
   }
 
+  Future<User> loginUser(Map<Object, dynamic> user) async {
+    final response = await http.post("$apiUrl/login", body: json.encode(user), headers: {
+      'Content-Type': 'application/json'
+    });
+
+    if (response.statusCode == 200) {
+      var user = json.decode(response.body);
+      return User.fromJson(user);
+    }
+
+    return null;
+  }
+
   Future<User> registerUser(User user) async {
     final response = await http.post("$apiUrl/register", body: json.encode(user.toJson()), headers: {
       'Content-Type': 'application/json'
@@ -77,17 +90,15 @@ class AuthApi {
     switch (response.statusCode) {
       case 422:
       case 400:
-        debugPrint("Validation error");
+      case 500:
         var errors = json.decode(response.body);
-        debugPrint(errors.toString());
-        return null;
-        break;
+        throw Exception(errors);
       case 200:
-        debugPrint("Success");
         var user = json.decode(response.body);
         return User.fromJson(user);
         break;
     }
+    return null;
   }
 
   Future<User> confirmToken() async {
@@ -104,5 +115,10 @@ class AuthApi {
     }
 
     throw Exception('Could not confirm token');
+  }
+
+  Future<void> saveToken(String token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
   }
 }

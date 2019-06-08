@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 class RoundIconTextBox extends StatefulWidget {
   final IconData icon;
-  final String hintText;
-  final TextEditingController controller;
+  final String hintText, errorText;
   final EdgeInsets margin;
   final TextInputType inputType;
   final bool obscureText;
@@ -13,7 +12,7 @@ class RoundIconTextBox extends StatefulWidget {
   RoundIconTextBox(
       {this.icon,
       this.hintText,
-      this.controller,
+      this.errorText,
       this.validator,
       this.onSaved,
       this.margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
@@ -24,7 +23,7 @@ class RoundIconTextBox extends StatefulWidget {
   State<StatefulWidget> createState() => RoundIconTextBoxState(
       this.icon,
       this.hintText,
-      this.controller,
+      this.errorText,
       this.validator,
       this.onSaved,
       this.margin,
@@ -34,8 +33,7 @@ class RoundIconTextBox extends StatefulWidget {
 
 class RoundIconTextBoxState extends State<RoundIconTextBox> {
   final IconData icon;
-  final String hintText;
-  final TextEditingController controller;
+  final String hintText, errorText;
   final EdgeInsets margin;
   final TextInputType inputType;
   final bool obscureText;
@@ -45,19 +43,21 @@ class RoundIconTextBoxState extends State<RoundIconTextBox> {
   RoundIconTextBoxState(
       this.icon,
       this.hintText,
-      this.controller,
+      this.errorText,
       this.validator,
       this.onSaved,
       this.margin,
       this.inputType,
       this.obscureText);
 
-  bool _autovalidate;
+  bool _autoValidate;
+  TextEditingController controller;
 
   @override
   void initState() {
     super.initState();
-    _autovalidate = false;
+    _autoValidate = false;
+    this.controller = TextEditingController();
     this.controller.addListener(startAutoValidate);
   }
 
@@ -65,7 +65,7 @@ class RoundIconTextBoxState extends State<RoundIconTextBox> {
     if (this.controller.text != "") {
       this.controller.removeListener(startAutoValidate);
       setState(() {
-        _autovalidate = true;
+        _autoValidate = true;
       });
     }
   }
@@ -76,12 +76,12 @@ class RoundIconTextBoxState extends State<RoundIconTextBox> {
     return Container(
       margin: this.margin,
       child: TextFormField(
-        controller: this.controller,
         keyboardType: this.inputType,
         obscureText: this.obscureText,
         validator: this.validator,
-        autovalidate: this._autovalidate,
+        autovalidate: this._autoValidate,
         onSaved: this.onSaved,
+        controller: this.controller,
         decoration: InputDecoration(
           prefixIcon: Icon(this.icon),
           border: OutlineInputBorder(
@@ -96,6 +96,7 @@ class RoundIconTextBoxState extends State<RoundIconTextBox> {
                 const Radius.circular(20.0),
               )),
           hintText: this.hintText,
+          errorText: this.errorText,
           hintStyle: TextStyle(color: Colors.grey),
         ),
       ),
