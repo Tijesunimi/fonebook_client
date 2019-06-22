@@ -29,6 +29,11 @@ dependencies:
   google_sign_in: ^4.0.2
   shared_preferences: ^0.5.3
   progress_dialog: ^1.1.0
+  contacts_service: ^0.2.7
+  simple_permissions: ^0.1.9
+  sqflite: ^1.0.0
+  path_provider: ^1.1.0
+  flutter_local_notifications: ^0.4.5
 
 dev_dependencies:
   flutter_test:

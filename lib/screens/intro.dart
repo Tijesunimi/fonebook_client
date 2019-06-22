@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
 import 'package:fonebook/config.dart';
 
@@ -13,14 +14,16 @@ import 'package:fonebook/ui_elements/forms/round_icon_dropdown.dart';
 import 'package:fonebook/ui_elements/forms/round_icon_textbox.dart';
 
 class IntroPage extends StatelessWidget {
-  static final TextEditingController countryController = TextEditingController();
+  static final TextEditingController countryController =
+      TextEditingController();
   static final TextEditingController phoneController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = Theme.of(context).primaryColor;
     final Color backgroundColor = Colors.white12;
-    final AuthApi authApi = AuthApi(Config.of(context).apiBaseUrl);
+
+    final Config config = Config.of(context);
 
     // TODO: implement build
     return Scaffold(
@@ -68,7 +71,8 @@ class IntroPage extends StatelessWidget {
                       child: SocialButton(
                         socialMedia: SocialMedia.Google,
                         buttonText: "Continue with Google",
-                        onPressed: () => doSocialLogin(context, authApi, 'google'),
+                        onPressed: () =>
+                            doSocialLogin(context, config, 'google'),
                       ),
                     ),
                     Padding(
@@ -76,7 +80,8 @@ class IntroPage extends StatelessWidget {
                       child: SocialButton(
                         socialMedia: SocialMedia.Facebook,
                         buttonText: "Continue with Facebook",
-                        onPressed: () => doSocialLogin(context, authApi, 'facebook'),
+                        onPressed: () =>
+                            doSocialLogin(context, config, 'facebook'),
                       ),
                     ),
                     Container(
@@ -257,17 +262,23 @@ class IntroPage extends StatelessWidget {
     );
   }
 
-  void doSocialLogin(BuildContext context, AuthApi authApi, String media) async {
-    final profile = media == 'facebook' ? await authApi.doFacebookAuth() : await authApi.doGoogleAuth();
+  void doSocialLogin(BuildContext context, Config config, String media) async {
+    final AuthApi authApi = AuthApi(config.apiBaseUrl);
+
+    final profile = media == 'facebook'
+        ? await authApi.doFacebookAuth()
+        : await authApi.doGoogleAuth();
     if (profile != null) {
-      final existingUser = await authApi.loginSocial({
-        'email': profile['email'],
-        'password': "$media-${profile['id']}"
-      });
+      final existingUser = await authApi.loginSocial(
+          {'email': profile['email'], 'password': "$media-${profile['id']}"});
 
       if (existingUser != null) {
         await authApi.saveToken(existingUser.token);
-        Navigator.popAndPushNamed(context, 'home');
+        debugPrint(existingUser.toString());
+        config.loggedInUser = existingUser;
+        Navigator.popAndPushNamed(context, 'home', arguments: {
+          'isNewLogin': true
+        });
       } else {
         await showDialog(
           context: context,
@@ -275,30 +286,45 @@ class IntroPage extends StatelessWidget {
         );
 
         if (phoneController.text.trim() != "" && countryController.text != "") {
-          var userProfile = await authApi.registerUser(User(
-            profile['first_name'],
-            profile['last_name'],
-            profile['email'],
-            countryController.text,
-            phoneController.text,
-            "$media-${profile['id']}",
-            true));
+          var pr = new ProgressDialog(context, ProgressDialogType.Normal);
+          pr.setMessage("Please wait...");
+          pr.show();
+          try {
+            var userProfile = await authApi.registerUser(User(
+                profile['first_name'],
+                profile['last_name'],
+                profile['email'],
+                countryController.text,
+                phoneController.text,
+                "$media-${profile['id']}",
+                true));
 
-          if (userProfile != null) {
-            await authApi.saveToken(userProfile.token);
-            Navigator.popAndPushNamed(context, 'home');
-          } else {
-            Scaffold.of(context).showSnackBar(
-              SnackBar(content: Text('An error occurred. Please try again')));
+            if (userProfile != null) {
+              await authApi.saveToken(userProfile.token);
+              config.loggedInUser = userProfile;
+
+              Navigator.popAndPushNamed(context, 'home', arguments: {
+                'isNewLogin': true
+              });
+            } else {
+              Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text('An error occurred. Please try again')));
+            }
+          } catch (e) {
+            pr.hide();
+            var error = e.message is Map && e.message.containsKey("message")
+                ? e.message["message"]
+                : "Registration error. Please try again";
+            Scaffold.of(context).showSnackBar(SnackBar(content: Text(error)));
           }
         } else {
           Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text('Registration cancelled. Please try again')));
+              content: Text('Registration cancelled. Please try again')));
         }
       }
     } else {
       Scaffold.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred. Please try again')));
+          SnackBar(content: Text('An error occurred. Please try again')));
     }
   }
 }

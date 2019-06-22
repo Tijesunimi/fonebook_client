@@ -106,7 +106,7 @@ class AuthApi {
     if (prefs.getString('token') != null) {
       final response = await http.get("$apiUrl/profile", headers: {
         'Authorization': prefs.get('token')
-      });
+      }).timeout(const Duration(seconds: 2));
 
       if (response.statusCode == 200) {
         var user = json.decode(response.body);
@@ -120,5 +120,10 @@ class AuthApi {
   Future<void> saveToken(String token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
+  }
+
+  Future<void> logoutUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
   }
 }

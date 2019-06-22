@@ -18,7 +18,7 @@ class LoginPage extends StatelessWidget {
     final Color primaryColor = Theme.of(context).primaryColor;
     final Color backgroundColor = Colors.white12;
 
-    final AuthApi authApi = AuthApi(Config.of(context).apiBaseUrl);
+    final Config config = Config.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -81,7 +81,7 @@ class LoginPage extends StatelessWidget {
                       icon: Icon(Icons.arrow_forward),
                       iconAlignment: Alignment.centerRight,
                       onPressed: () {
-                        doLogin(context, authApi);
+                        doLogin(context, config);
                       },
                     ),
                   ),
@@ -94,7 +94,9 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  void doLogin(BuildContext context, AuthApi authApi) async {
+  void doLogin(BuildContext context, Config config) async {
+    final AuthApi authApi = AuthApi(config.apiBaseUrl);
+
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
 
@@ -108,8 +110,12 @@ class LoginPage extends StatelessWidget {
       });
       if (userProfile != null) {
         await authApi.saveToken(userProfile.token);
+        config.loggedInUser = userProfile;
+
         pr.hide();
-        Navigator.popAndPushNamed(context, 'home');
+        Navigator.popAndPushNamed(context, 'home', arguments: {
+          'isNewLogin': true
+        });
       } else {
         pr.hide();
         Scaffold.of(context).showSnackBar(

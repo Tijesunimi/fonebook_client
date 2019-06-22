@@ -5,6 +5,7 @@ import 'screens/login.dart';
 import 'screens/register.dart';
 import 'screens/intro.dart';
 import 'screens/home.dart';
+import 'screens/contact.dart';
 
 import 'config.dart';
 
@@ -23,19 +24,33 @@ class Fonebook extends StatelessWidget {
       title: config.appName,
       theme: ThemeData(
           primarySwatch: Colors.blue, primaryColor: Color(0xFF4aa0d5)),
-      routes: {
-        'intro': (context) => IntroPage(),
-        'login': (context) => LoginPage(),
-        'register': (context) => RegisterPage(),
-        'home': (context) => Homepage()
+      onGenerateRoute: (settings) {
+        switch(settings.name) {
+          case 'intro':
+            return MaterialPageRoute(builder: (_) => IntroPage());
+          case 'login':
+            return MaterialPageRoute(builder: (_) => LoginPage());
+          case 'register':
+            return MaterialPageRoute(builder: (_) => RegisterPage());
+          case 'home':
+            final Map<String, dynamic> args = settings.arguments;
+            return MaterialPageRoute(builder: (_) => Homepage(args['isNewLogin']));
+          case 'contact':
+            final Map<String, dynamic> args = settings.arguments;
+            return MaterialPageRoute(builder: (_) => Contact(contact: args['contact']));
+        }
       },
       home: FutureBuilder<User>(
           future: authApi.confirmToken(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return Homepage();
+              config.loggedInUser = snapshot.data;
+              return Homepage(false);
+            } else if (snapshot.hasError) {
+              return IntroPage();
             }
-            return IntroPage();
+
+            return Material();
           }),
     );
   }

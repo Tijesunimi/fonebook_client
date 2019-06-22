@@ -27,8 +27,8 @@ class RegisterPage extends StatelessWidget {
     final Color primaryColor = Theme.of(context).primaryColor;
     final Color backgroundColor = Colors.white12;
 
-    final CountryApi countryApi = CountryApi(Config.of(context).apiBaseUrl);
-    final AuthApi authApi = AuthApi(Config.of(context).apiBaseUrl);
+    final Config config = Config.of(context);
+    final CountryApi countryApi = CountryApi(config.apiBaseUrl);
 
     return Scaffold(
       appBar: AppBar(
@@ -186,7 +186,7 @@ class RegisterPage extends StatelessWidget {
                               style: TextStyle(color: Colors.white)),
                           icon: Icon(Icons.arrow_forward),
                           iconAlignment: Alignment.centerRight,
-                          onPressed: () => doRegistration(context, authApi),
+                          onPressed: () => doRegistration(context, config),
                         ),
                       ),
                     ],
@@ -198,7 +198,9 @@ class RegisterPage extends StatelessWidget {
     );
   }
 
-  void doRegistration(BuildContext context, AuthApi authApi) async {
+  void doRegistration(BuildContext context, Config config) async {
+    final AuthApi authApi = AuthApi(config.apiBaseUrl);
+
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
 
@@ -216,8 +218,12 @@ class RegisterPage extends StatelessWidget {
             false));
         if (userProfile != null) {
           await authApi.saveToken(userProfile.token);
+          config.loggedInUser = userProfile;
+
           pr.hide();
-          Navigator.popAndPushNamed(context, 'home');
+          Navigator.popAndPushNamed(context, 'home', arguments: {
+            'isNewLogin': true
+          });
         } else {
           Scaffold.of(context).showSnackBar(
               SnackBar(content: Text('Registration error. Please try again')));
