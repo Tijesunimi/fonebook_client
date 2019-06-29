@@ -36,12 +36,12 @@ class MainContact {
       data['identifier'],
       data['category'],
       ContactName.fromJson(data['names']),
-      data['company'] ?? "",
+      data['company'],
       data['phones'] ?? {},
       data['emails'] ?? {},
       data['addresses'] ?? {},
-      data['website'] ?? "",
-      data['notes'] ?? "",
+      data['website'],
+      data['notes'],
       data['birth_date'] != null ? DateTime.parse(data['birth_date']) : null,
       data['custom'] ?? {},
       isServerManaged: data['is_country']
@@ -54,12 +54,12 @@ class MainContact {
       data['id'],
       data['category'],
       ContactName.fromJson(json.decode(data['names'])),
-      data['company'] ?? "",
+      data['company'],
       data['phones'] != null ? json.decode(data['phones']) : {},
       data['emails'] != null ? json.decode(data['emails']) : {},
       data['addresses'] != null ? json.decode(data['addresses']) : {},
-      data['website'] ?? "",
-      data['notes'] ?? "",
+      data['website'],
+      data['notes'],
       data['birth_date'] != null ? DateTime.parse(data['birth_date']) : null,
       data['custom'] != null ? json.decode(data['custom']) : {},
       isServerManaged: data['is_country'] ?? false
@@ -128,12 +128,12 @@ class ContactName {
 
   factory ContactName.fromJson(Map<Object, dynamic> json) {
     return ContactName(
-      json['first'] ?? "",
-      json['last'] ?? "",
-      json['middle'] ?? "",
-      json['display'] ?? "",
-      json['prefix'] ?? "",
-      json['suffix'] ?? ""
+      json['first'],
+      json['last'],
+      json['middle'],
+      json['display'],
+      json['prefix'],
+      json['suffix']
     );
   }
 

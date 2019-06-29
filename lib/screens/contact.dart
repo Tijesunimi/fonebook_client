@@ -65,22 +65,22 @@ class Contact extends StatelessWidget {
       contactDetails.add(getSingleTile(contact.birthDate.toString(), Icons.date_range));
     }
 
-    if (contact.company.isNotEmpty) {
+    if (contact.company != null && contact.company.isNotEmpty) {
       contactDetails.add(getSubHeading('COMPANY'));
       contactDetails.add(getSingleTile(contact.company, Icons.work));
     }
 
-    if (contact.website.isNotEmpty) {
+    if (contact.website != null && contact.website.isNotEmpty) {
       contactDetails.add(getSubHeading('WEBSITE'));
       contactDetails.add(getSingleTile(contact.website, Icons.link));
     }
 
-    if (contact.notes.isNotEmpty) {
+    if (contact.notes != null && contact.notes.isNotEmpty) {
       contactDetails.add(getSubHeading('NOTES'));
       contactDetails.add(getSingleTile(contact.notes, Icons.note));
     }
 
-    if (contact.custom.length > 0) {
+    if (contact.custom != null && contact.custom.length > 0) {
       contactDetails.add(getSubHeading('OTHER DETAILS'));
       contactDetails.addAll(getMapTiles(contact.custom, Icons.bookmark));
     }

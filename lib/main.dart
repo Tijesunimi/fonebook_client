@@ -6,6 +6,7 @@ import 'screens/register.dart';
 import 'screens/intro.dart';
 import 'screens/home.dart';
 import 'screens/contact.dart';
+import 'screens/category.dart';
 
 import 'config.dart';
 
@@ -38,6 +39,10 @@ class Fonebook extends StatelessWidget {
           case 'contact':
             final Map<String, dynamic> args = settings.arguments;
             return MaterialPageRoute(builder: (_) => Contact(contact: args['contact']));
+          case 'category':
+          case 'contact':
+            final Map<String, dynamic> args = settings.arguments;
+            return MaterialPageRoute(builder: (_) => Category(category: args['category'], contacts: args['contacts']));
         }
       },
       home: FutureBuilder<User>(

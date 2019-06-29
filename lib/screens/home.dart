@@ -8,6 +8,8 @@ import 'package:fonebook/models/contact.dart';
 import 'package:fonebook/api/auth.dart';
 import 'package:fonebook/api/contacts.dart';
 
+import 'package:fonebook/screens/particles/contacts_list.dart';
+
 class Homepage extends StatefulWidget {
   final bool isNewLogin;
   Homepage(this.isNewLogin);
@@ -27,6 +29,8 @@ class HomepageState extends State<Homepage> {
   AuthApi authApi;
   User loggedInUser;
 
+  Future contacts;
+
   @override
   void initState() {
     initializeNotifications();
@@ -38,6 +42,9 @@ class HomepageState extends State<Homepage> {
     Config config = Config.of(context);
     loggedInUser = config.loggedInUser;
     contactsApi = ContactsApi(config.apiBaseUrl, config.loggedInUser);
+    authApi = AuthApi(config.apiBaseUrl);
+
+    contacts = contactsApi.fetchContactsAndCategories();
 
     super.didChangeDependencies();
   }
@@ -93,41 +100,34 @@ class HomepageState extends State<Homepage> {
           ),
           body: TabBarView(
             children: <Widget>[
-              Center(
-                child: Text('Category'),
-              ),
-              FutureBuilder<List<MainContact>>(
-                future: contactsApi.syncContactsLocal(),
+              FutureBuilder<Map<Object, dynamic>>(
+                future: contacts,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    if (isNewLogin) {
-                      doServerSync();
-                      isNewLogin = false;
-                    }
-
-                    var contacts = snapshot.data;
-                    return ListView.builder(
-                      itemCount: contacts.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return ListTile(
-                          title: Text(contacts[index].names.display),
-                          leading: Icon(Icons.contacts),
-                          onTap: () {
-                            Navigator.of(context).pushNamed(
-                                'contact',
-                                arguments: {
-                                  'contact': contacts[index]
-                                }
-                            );
-                          },
-                        );
-                      },
-                    );
+                    var categories = snapshot.data['categories'];
+                    var contacts = snapshot.data['contacts'];
+                    return getCategoriesListView(categories, contacts);
                   } else if (snapshot.hasError) {
-                    return Text("Could not fetch contact. Please connect to the internet and try again");
+                    return Center(
+                      child: Text("Could not fetch categories. Please connect to the internet and try again"),
+                    );
                   }
 
-                  // By default, show a loading spinner
+                  return Center(child: CircularProgressIndicator());
+                },
+              ),
+              FutureBuilder<Map<Object, dynamic>>(
+                future: contacts,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    var contacts = snapshot.data['contacts'];
+                    return ContactsList(contacts);
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text("Could not fetch contact. Please connect to the internet and try again"),
+                    );
+                  }
+
                   return Center(child: CircularProgressIndicator());
                 },
               )
@@ -136,6 +136,28 @@ class HomepageState extends State<Homepage> {
     );
   }
 
+  Widget getCategoriesListView(List<String> categories, List<MainContact> contacts) {
+    return ListView.builder(
+      itemCount: categories.length,
+      itemBuilder: (BuildContext context, int index) {
+        var category = categories[index];
+
+        return ListTile(
+          title: Text(category),
+          leading: Icon(Icons.category),
+          onTap: () {
+            Navigator.of(context).pushNamed(
+                'category',
+                arguments: {
+                  'category': category,
+                  'contacts': category == 'Uncategorized' ? contacts : contacts.where((c) => c.category == category).toList()
+                }
+            );
+          },
+        );
+      },
+    );
+  }
   void doLogout(BuildContext context) async {
     showDialog(
         context: context,
@@ -163,9 +185,9 @@ class HomepageState extends State<Homepage> {
         ));
   }
 
-  void doServerSync() async {
+  void doServerSync(List<MainContact> contacts) async {
     _showNotificationWithDefaultSound('Syncing', 'Currently syncing contacts');
-    contactsApi.syncContacts();
+    contactsApi.syncContactsToServer(contacts);
   }
 
   void initializeNotifications() {

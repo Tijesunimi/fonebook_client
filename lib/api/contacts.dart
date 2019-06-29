@@ -17,22 +17,21 @@ class ContactsApi {
 
   ContactsApi(this.apiUrl, this.currentUser);
 
-  Future<List<MainContact>> getContactsFromServer() async {
+  Future<dynamic> getContactsFromServer() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final response = await http.get("$apiUrl/contacts",
         headers: {'Authorization': prefs.get('token')});
 
     if (response.statusCode == 200) {
       var contactsJson = json.decode(response.body);
-      return contactsJson
-          .map<MainContact>((c) => MainContact.fromJson(c))
-          .toList();
+      return contactsJson;
     } else {
-      throw Exception('Could not fetch contacts');
+      return [];
+      //throw Exception('Could not fetch contacts');
     }
   }
 
-  Future<List<MainContact>> getContactsFromPhone() async {
+  Future<List<Contact>> getContactsFromPhone() async {
     if (!await SimplePermissions.checkPermission(Permission.ReadContacts)) {
       var permissionStatus =
           await SimplePermissions.requestPermission(Permission.ReadContacts);
@@ -42,7 +41,7 @@ class ContactsApi {
     }
 
     final contacts = await ContactsService.getContacts();
-    return contacts.map((c) => convertToServerContact(c)).toList();
+    return contacts.toList();
   }
 
   Future<List<MainContact>> getContactsFromLocal() async {
@@ -50,11 +49,59 @@ class ContactsApi {
     return await db.fetchContacts();
   }
 
-  Future<bool> syncContacts() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  /*
+    Get contacts from all three sources and add to a single list using hierarchy:
+    1 - Phone Contact (assumed to be the most updated)
+    2 - Local Db Contact
+    3 - Server Contact (assumed to be the least updated)
+  */
+  Future<Map<Object, dynamic>> fetchContactsAndCategories() async {
+    var allContacts = Map<String, MainContact>();
+    var categoriesList = List<String>();
 
-    final db = DatabaseHelper.instance;
-    var contacts = await db.fetchUserContacts();
+    var localContacts = await getContactsFromLocal();
+    localContacts.forEach((contact) {
+      allContacts[contact.identifier] = contact;
+
+      if (!categoriesList.contains(contact.category) && contact.category != null && contact.category.isNotEmpty)
+        categoriesList.add(contact.category);
+    });
+
+    var phoneContacts = await getContactsFromPhone();
+    phoneContacts.forEach((contact) {
+      var contactToAdd = allContacts.containsKey(contact.identifier) ?
+        getUpdatedMainContactFromPhoneContact(allContacts[contact.identifier], contact) :
+        getNewMainContactFromPhoneContact(contact);
+
+      allContacts[contact.identifier] = contactToAdd;
+      if (!categoriesList.contains(contactToAdd.category) && contactToAdd.category != null && contactToAdd.category.isNotEmpty)
+        categoriesList.add(contactToAdd.category);
+    });
+
+    var serverContacts = await getContactsFromServer();
+    serverContacts.map((contact) {
+      if (!allContacts.containsKey(contact['identifier'])) {
+        var contactToAdd = MainContact.fromJson(contact);
+
+        allContacts[contact['identifier']] = contactToAdd;
+        if (!categoriesList.contains(contactToAdd.category) && contactToAdd.category != null && contactToAdd.category.isNotEmpty)
+          categoriesList.add(contactToAdd.category);
+      }
+    });
+
+    categoriesList.add('Uncategorized');
+    categoriesList.sort((a, b) => a.compareTo(b));
+
+    var contactsList = allContacts.values.toList();
+    contactsList.sort((a, b) => a.names.display.compareTo(b.names.display));
+    return {
+      'categories': categoriesList,
+      'contacts': contactsList
+    };
+  }
+
+  Future<bool> syncContactsToServer(List<MainContact> contacts) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
     final response = await http.post("$apiUrl/sync",
         body: json.encode({'contacts': contacts}),
@@ -73,25 +120,39 @@ class ContactsApi {
     }
   }
 
-  Future<List<MainContact>> syncContactsLocal() async {
-    var phoneContacts = await getContactsFromPhone();
-    var serverContacts = await getContactsFromServer();
-    phoneContacts.addAll(serverContacts);
-
-    final db = DatabaseHelper.instance;
-    await db.syncContacts(phoneContacts);
-    return phoneContacts;
-  }
-
-  List<MainContact> convertContactsToServerList(List<Contact> phoneContacts) {
-    List<MainContact> contacts = List<MainContact>();
-    phoneContacts.forEach((contact) {
-      contacts.add(convertToServerContact(contact));
+  MainContact getUpdatedMainContactFromPhoneContact(MainContact mainContact, Contact phoneContact)  {
+    var phones = {};
+    phoneContact.phones.forEach((phone) {
+      phones[phone.label] = phone.value;
     });
-    return contacts;
+
+    var emails = {};
+    phoneContact.emails.forEach((email) {
+      emails[email.label] = email.value;
+    });
+
+    var addresses = {};
+    phoneContact.postalAddresses.forEach((address) {
+      addresses[address.label] = "${address.street ?? ""} ${address.city ?? ""} ${address.country ?? ""} ${address.postcode ?? ""}".trim();
+    });
+
+    return MainContact(
+      mainContact.identifier,
+      mainContact.category,
+      ContactName(phoneContact.givenName, phoneContact.familyName, phoneContact.middleName,
+          phoneContact.displayName, phoneContact.prefix, phoneContact.suffix),
+      phoneContact.company,
+      phones,
+      emails,
+      addresses,
+      mainContact.website,
+      phoneContact.note,
+      mainContact.birthDate,
+      mainContact.custom
+    );
   }
 
-  MainContact convertToServerContact(Contact contact) {
+  MainContact getNewMainContactFromPhoneContact(Contact contact) {
     var phones = {};
     contact.phones.forEach((phone) {
       phones[phone.label] = phone.value;
@@ -113,12 +174,12 @@ class ContactsApi {
         "",
         ContactName(contact.givenName, contact.familyName, contact.middleName,
             contact.displayName, contact.prefix, contact.suffix),
-        contact.company ?? "",
+        contact.company,
         phones,
         emails,
         addresses,
         "",
-        contact.note ?? "",
+        contact.note,
         null,
         {});
   }
